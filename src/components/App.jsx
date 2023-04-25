@@ -87,7 +87,7 @@ export const App = () => {
 
   return (
     <>
-      <Searchbar onSubmit={onSubmit} />;
+      <Searchbar onSubmit={onSubmit} />
       <ImageGallery images={images} handleModalOpen={handleModalOpen} />
       {loading && <Loader />}
       {!loading && isLoadMorePresent && (
