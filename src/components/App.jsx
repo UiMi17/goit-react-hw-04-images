@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
@@ -21,12 +21,7 @@ export const App = () => {
     tags: '',
   });
 
-  useEffect(() => {
-    handleStateUpdate();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, currentPage]);
-
-  const getImages = async () => {
+  const getImages = useCallback(async () => {
     try {
       const API_KEY = '34819242-61fdcfe42d1461d5acd80d71b';
 
@@ -40,7 +35,29 @@ export const App = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, per_page, query]);
+
+  const handleStateUpdate = useCallback(async () => {
+    const fetchedImages = await getImages();
+
+    setImages([...images, ...fetchedImages.data.hits]);
+    if (fetchedImages.data.hits.length === 0) {
+      setIsLoadMorePresent(false);
+      toast.warning("Sorry, there's no images found!");
+    } else if (
+      fetchedImages.data.hits.length < per_page ||
+      fetchedImages.data.totalHits <= per_page
+    ) {
+      setIsLoadMorePresent(false);
+      toast.warning("You've reached the end of search results!");
+    } else {
+      setIsLoadMorePresent(true);
+    }
+  }, [getImages, images, per_page]);
+
+  useEffect(() => {
+    handleStateUpdate();
+  }, [query, currentPage, handleStateUpdate]);
 
   const onSubmit = ev => {
     ev.preventDefault();
@@ -64,24 +81,6 @@ export const App = () => {
   const handleModalClose = ev => {
     if (ev.code === 'Escape' || ev.target === ev.currentTarget) {
       setIsModalShown(false);
-    }
-  };
-
-  const handleStateUpdate = async () => {
-    const fetchedImages = await getImages();
-
-    setImages([...images, ...fetchedImages.data.hits]);
-    if (fetchedImages.data.hits.length === 0) {
-      setIsLoadMorePresent(false);
-      toast.warning("Sorry, there's no images found!");
-    } else if (
-      fetchedImages.data.hits.length < per_page ||
-      fetchedImages.data.totalHits <= per_page
-    ) {
-      setIsLoadMorePresent(false);
-      toast.warning("You've reached the end of search results!");
-    } else {
-      setIsLoadMorePresent(true);
     }
   };
 
