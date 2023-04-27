@@ -40,7 +40,9 @@ export const App = () => {
   const handleStateUpdate = useCallback(async () => {
     const fetchedImages = await getImages();
 
-    setImages([...images, ...fetchedImages.data.hits]);
+    setImages(prevState => {
+      return [...prevState, ...fetchedImages.data.hits];
+    });
     if (fetchedImages.data.hits.length === 0) {
       setIsLoadMorePresent(false);
       toast.warning("Sorry, there's no images found!");
@@ -53,7 +55,7 @@ export const App = () => {
     } else {
       setIsLoadMorePresent(true);
     }
-  }, [getImages, images, per_page]);
+  }, [getImages, per_page]);
 
   useEffect(() => {
     handleStateUpdate();
@@ -70,7 +72,9 @@ export const App = () => {
   };
 
   const handleLoadMoreBtnClick = () => {
-    setCurrentPage(currentPage + 1);
+    setCurrentPage(prevState => {
+      return prevState + 1;
+    });
   };
 
   const handleModalOpen = (largeImageURL, tags) => {
